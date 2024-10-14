@@ -21,5 +21,5 @@ Name: Timothy Sanders<br>
 Assignment: W4 Homework 4: Functions, Tables, and Groups<br>
 Due Date: 9/24/24<br>
 Description: Practice exercises for functions, tables, and groups<br>
-Academic Honest Pledge: I, Timothy Sanders, do hereby certify that I have derived no assistance for this project from any sources other than those listed as references.
+Academic Honesty Pledge: I, Timothy Sanders, do hereby certify that I have derived no assistance for this project from any sources other than those listed as references.
 ```
