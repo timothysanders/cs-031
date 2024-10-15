@@ -3,6 +3,8 @@ This repository contains notes, exercises, supplemental materials, etc. from PCC
 
 This course is based on UC Berkeley's "Data 8: The Foundations of Data Science" course.
 
+Materials for Data 8 Spring 2022 can be found [here](http://www.data8.org/sp22/) and additional code assets can be found on [GitHub](https://github.com/data-8/materials-sp22)
+
 ## Office Hours
 - Thursday 1:00-2:00PM (In person)
 - Tuesday & Thursday 4:00-5:00PM (Online)
