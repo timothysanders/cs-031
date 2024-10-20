@@ -4,7 +4,7 @@
 - 11.1: Assessing a Model
 - 11.2: Multiple Categories
 
-## Python Code
+### 11.1 Python Code
 ```python
 import numpy as np
 from datascience import *
@@ -84,3 +84,110 @@ plt.savefig("./graphs/11_1_6_count_in_random_sample.png")
 #### 11.1.8: Statistical Bias
 - This analysis provides quantitative evidence of unfairness in Robert Swain's trial
 - When a process produces data consistently skewed in one direction, data scientists say the data is *biased*
+
+### 11.2 Python Code
+```python
+import numpy as np
+from datascience import *
+import matplotlib.pyplot as plt
+plt.style.use('fivethirtyeight')
+jury = Table().with_columns(
+    'Ethnicity', make_array('Asian/PI', 'Black/AA', 'Caucasian', 'Hispanic', 'Other'),
+    'Eligible', make_array(0.15, 0.18, 0.54, 0.12, 0.01),
+    'Panels', make_array(0.26, 0.08, 0.54, 0.08, 0.04)
+)
+
+jury.barh("Ethnicity")
+plt.savefig("./graphs/11_2_2_ethnicity.png")
+
+# 11.2.3
+eligible_population = jury.column('Eligible')
+sample_distribution = sample_proportions(1453, eligible_population)
+panels_and_sample = jury.with_column('Random Sample', sample_distribution)
+panels_and_sample.barh('Ethnicity')
+plt.savefig("./graphs/11_2_3_ethnicity.png")
+
+# 11.2.4
+# Augment the table with a column of differences between proportions
+jury_with_diffs = jury.with_column(
+    'Difference', jury.column('Panels') - jury.column('Eligible')
+)
+jury_with_diffs = jury_with_diffs.with_column(
+    'Absolute Difference', np.abs(jury_with_diffs.column('Difference'))
+)
+jury_with_diffs.column('Absolute Difference').sum() / 2
+
+# 11.2.5
+def total_variation_distance(distribution_1, distribution_2):
+    return sum(np.abs(distribution_1 - distribution_2)) / 2
+
+sample_distribution = sample_proportions(1453, eligible_population)
+total_variation_distance(sample_distribution, eligible_population)
+
+def one_simulated_tvd():
+    sample_distribution = sample_proportions(1453, eligible_population)
+    return total_variation_distance(sample_distribution, eligible_population)
+
+tvds = make_array()
+repetitions = 5000
+for i in np.arange(repetitions):
+    tvds = np.append(tvds, one_simulated_tvd())
+
+# 11.2.6
+Table().with_column('TVD', tvds).hist(bins=np.arange(0, 0.2, 0.005))
+
+# Plotting parameters; you can ignore this code
+plt.title('Prediction Assuming Random Selection')
+plt.xlim(0, 0.15)
+plt.ylim(-5, 50)
+plt.scatter(0.14, 0, color='red', s=30)
+plt.savefig("./graphs/11_2_6_assesing_model.png")
+```
+### 11.2: Multiple Categories
+- Now we can consider panelists in multiple racial and ethnic categories, not just two
+- General process is the same as before, but we will need a new statistic to simulate
+#### 11.2.1: Jury Selection in Alameda County
+- ACLU report from 2010 reported certain racial and ethnic groups are underrepresented amount jury panelists
+- Jury panel is supposed to be representative/selected at random
+#### 11.2.2: Composition of Panels in Alameda County
+- ACLU gathered data on composition of jury panels
+- We can visualize this data with a bar chart
+- ![ethnicities](/graphs/11_2_2_ethnicity.png)
+#### 11.2.3: Comparison with Panels Selected at Random
+- How do we go about comparing a random sample with the distributions of our observed and expected panels?
+- To do this, we can use `sample_proportions()` and augment our existing `jury` table
+- We can sample 1453 times (to get our panel) and display the distribution along with the distributions of eligible jurors/panel in data
+- ![ethnicities](/graphs/11_2_3_ethnicity.png)
+- We see that our bar chart more closely resembles our eligible population than it does the distribution on the panels
+- We can simulate this distribution many times, but we need a statistic to assess..
+#### 11.2.4: A New Statistic: The Distance between Two Distributions
+- We already know how to measure how different two numbers are, by taking the absolute value of their difference
+- We can do the same for a distribution by using *total variation distance*
+- To calculate this, we find the difference between the two proportions in each category
+- The sum of the differences in the column "Difference" is 0, because the proportions in each column add up to 0, so the give-and-take between their entries must add up to zero
+- Drop the negative signs, add all the entries, then divide by two
+- Our quantity is the *total variation distance* between the two distributions
+- In general, this statistic measures how close distributions are, the larger the TVD, the more different the distributions are
+- We can use this statistic to simulate under the assumption of random selection
+- Large values of this metric are evidence against random selection
+#### 11.2.5: Simulating the Statistic Under the Model
+- A function can help us calculate our TVD easily in each simulation repetition
+- Use the `sample_proportions()` function to generate a random sample from the eligible population
+##### 11.2.5.1: Simulating One Value of the Statistic
+- We can create a function that gives us one simulated total variation distance
+- This can then be repeated in a `for` loop
+#### 11.2.6: Assessing the Model of Random Selection
+- We can look at our empirical (observed) histogram of simulated distances
+- ![assessing model](/graphs/11_2_6_assesing_model.png)
+- We see that our panels in the study are well outside of the tail of the histogram
+- Our simulation shows that the composition of the panels is not consisten with a model of random selection
+#### 11.2.7: Reasons for the Bias
+- Our model cannot say *why* specifically the distributions are different
+- There may be many reasons why a particular distribution does not match, such as bad software, different selection criteria, etc.
+#### 11.2.8: Data Quality
+- Good data science requires a thoughtful analysis of our input data and how it was gathered
+- Our estimate of the eligible population is itself an estimate and could have errors in it
+- Other factors, like not all potential jurors reporting for service (due to many reasons) can impact our potential panel of jurors
+#### 11.2.9: Conclusion
+- Because of the limitations, we must be precise about what exactly we can conclude from our analysis
+- "We can conclude that the distribution provided for the panelists who reported for service does not look like a random sample from the estimated distribution in the eligible population."
