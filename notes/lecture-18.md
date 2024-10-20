@@ -139,4 +139,47 @@ np.count_nonzero(distances >= different_observed_statistic) / repetitions
 - Things to keep in mind
   - Always provide the observed value of the test statistic and the p-value, so that readers can decide whether or not they think the p-value is small. 
   - Don’t look to defy convention only when the conventionally derived result is not to your liking. 
-  - Even if a test concludes that the data don’t support the chance model in the null hypothesis, it typically doesn’t explain why the model doesn’t work. Don’t make causal conclusions without further analysis, unless you are running a randomized controlled trial. We will analyze those in a later section.
+  - Even if a test concludes that the data don’t support the chance model in the null hypothesis, it typically doesn’t explain why the model doesn’t work. Don’t make causal conclusions without further analysis, unless you are running a randomized controlled trial.
+
+### 11.4: Error Probabilities
+- Our last step in deciding which of our two hypotheses is better supported by data, is a judgement about the consistency of the data and the null hypothesis
+- This step may lead us astray, as chance variation can cause a sample to look quite different from what the null hypothesis predicts
+#### 11.4.1: Wrong Conclusions
+- If you are testing a null hypothesis against the alternative that the null isn't true, there are four ways of classifying reality and the result of the test
+
+|                     | Test Favors the Null | Test Favors the Alternative |
+|---------------------|----------------------|-----------------------------|
+| Null is True        | Correct Result       | Error                       |
+| Alternative is True | Error                | Correct Result              |
+- One type of error occurs if the test favors the alternative hypothesis when the null hypothesis is in fact true
+- The other type of error is if the test favors the null hypothesis when the alternative is true
+- Since the null hypothesis is a completely specified chance model, the first type of error has a chance that we can estimate
+  - This answer turns out to be the cutoff that we use for the p-value
+#### 11.4.2: The Chance of an Error
+- Example is testing whether a coin is fair
+  - Null: the coin is fair, results are like draws made at random (with replacement) from [Heads, Tails]
+  - Alternative: coin is not fair
+- Test statistic is `| number of heads - 1000 |` (repetitions=2000)
+  - Small values favor null hypothesis, large values favor the alternative
+- Assuming we ran this experiment 2000 times and our original observed statistic was 45
+  - `np.count_nonzero(statistics >= 45) / repetitions`
+  - Area to the right of 45 is ~0.04654
+- If we use a 5% cutoff for the p-value, our decision rule would conclude that the coin is unfair if the test statistic comes out to be 45 or more
+- However, this result can actually happen
+- This means that if we use our 5% cutoff, we have a 5% chance of concluding the coin is unfair, even if the coin is fair
+#### 11.4.3: The Cutoff for the p-value is an Error Probability
+- *If you use a p% cutoff for the p-value, and the null hypothesis happens to be true, then there is about a p% chance that your test will conclude that the alternative is true.*
+- Using our table previously, the p-value is the probability of the null hypothesis being true, but the test favoring the alternative
+##### 11.4.3.1: Controlling for the Error
+- The 1% cutoff for p-value is more conservative and has less of a chance of concluding the alternative if the null is true
+  - Randomized control trials of medical treatments usually use 1% as the cutoff for deciding between their hypotheses
+    - Null: Treatment has no effect; observed differences between treatment and control are due to randomization
+    - Alternative: The treatment has an effect
+- However, even if you set the p-value to 1%, there is still a chance you reject the null hypothesis incorrectly
+#### 11.4.4: Data Snooping and p-Hacking
+- Because we can wrongly reject hypotheses, it is important that experiments are replicated
+  - This means other researchers should carry out the experiment and see if they get similar results
+- If you are testing many different hypotheses at once, this could lead to *data snooping* or *p-hacking*, which is "torturing the data into making a false confession"
+#### 11.4.5: Technical Note: The Other Kind of Error
+- Another error is concluding the treatment does nothing when it actually does something
+- Remember, if you set up your test to reduce one of the two errors, you almost always increase the other one
